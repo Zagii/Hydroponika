@@ -1,0 +1,7 @@
+#ifndef SEKRET_H
+#define SEKRET_H
+
+#define NAZWA_SSID "tajneSSIDabc123"
+#define HASLO_WIFI "****"
+
+#endif
