@@ -24,26 +24,32 @@ class CkonfigPortal{
 
 
 public:
+    CkonfigPortal(){}
     void begin()
     {
+        Serial.println("KonfigPortal.begin");
         konfigMode=false;
+        server.begin();
     }
     bool getKonfigMode(){return konfigMode;}
     void setKonfigMode(bool m)
     { 
         if(m==konfigMode)return;
         konfigMode=m;
+        Serial.print("KonfigMode: ");
         if(m)
         {
-            server.begin();
+           // server.begin();
+            Serial.println(" ON");
         }else
         {
-            server.stop();
+           // server.stop();
+            Serial.println(" OFF");
         }
     }
-    bool loop(CParams &params,uint8_t stanPompka)
+    int loop(CParams &params,uint8_t stanPompka)
     {
-    bool ret=false;
+    int ret=-1;
     WiFiClient client = server.available();   // Listen for incoming clients
 
     if (client) {                             // If a new client connects,
@@ -78,7 +84,7 @@ public:
                     {
                     params.czasOn=tmpf;
                     zapiszEEPROM(params.czasOn,params.czasOff);
-                    ret=true;
+                    ret=1;
                     }
                 } else if (header.indexOf("GET /czasOff") >= 0) {
                 Serial.print("czas Off ");
@@ -90,7 +96,7 @@ public:
                     {
                     params.czasOff=tmpf;
                     zapiszEEPROM(params.czasOn, params.czasOff);
-                    ret=true;
+                    ret=1;
                     }
                 }else if (header.indexOf("GET /mnoznik") >= 0) {
                 Serial.print("mnoznik ");
@@ -98,6 +104,10 @@ public:
                 s=s.substring(s.indexOf("mnoznik")+8,s.indexOf("HTTP/")-1);
                 Serial.println(s);
                 params.batMnoznik=s.toFloat();
+                }else if (header.indexOf("GET /on") >= 0) {
+                    ret=1;
+                }else if (header.indexOf("GET /off") >= 0) {
+                    ret=0;
                 }
                 
                 // Display the HTML web page
@@ -108,7 +118,7 @@ public:
                 // Feel free to change the background-color and font-size attributes to fit your preferences
                 client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
                 client.println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
-                client.println("text-decoration: none; font-size: 20px; margin: 2px; cursor: pointer;}");
+                client.println("text-decoration: none; font-size: 14px; margin: 2px; cursor: pointer;}");
                 client.println(".button2 {background-color: #77878A;}</style></head>");
                 
                 // Web Page Heading
@@ -127,14 +137,16 @@ public:
                 }
                 client.println("<p>licznik: " + String(params.licznik_sekund) + ", <a href=\"/\">odswiez<a></p>");
                 sprintf(t,"/czasOn/%3.1f",params.czasOn+0.5);
-                client.println("<p>czasOn: " + String(params.czasOn) + "<a href=\""+String(t)+"\"><button class=\"button\">+30s:"+String(params.czasOn+0.5)+"</button></a>");
+                client.println("<p>czasOn: " + String(params.czasOn) + "<a href=\""+String(t)+"\"><button class=\"button\">+30s</button></a>");
                 sprintf(t,"/czasOn/%3.1f",params.czasOn-0.5);
-                client.println("<a href=\""+String(t)+"\"><button class=\"button\">-30s:"+String(params.czasOn-0.5)+"</button></a></p>");
+                client.println("<a href=\""+String(t)+"\"><button class=\"button\">-30s</button></a></p>");
                 
                 sprintf(t,"/czasOff/%3.1f",params.czasOff+0.5);
-                client.println("<p>czasOff: " + String(params.czasOff) + "<a href=\""+String(t)+"\"><button class=\"button\">+30s:"+String(params.czasOff+0.5)+"</button></a>");
+                client.println("<p>czasOff: " + String(params.czasOff) + "<a href=\""+String(t)+"\"><button class=\"button\">+30s</button></a>");
                 sprintf(t,"/czasOff/%3.1f",params.czasOff-0.5);
-                client.println("<a href=\""+String(t)+"\"><button class=\"button\">-30s:"+String(params.czasOff-0.5)+"</button></a></p>");
+                client.println("<a href=\""+String(t)+"\"><button class=\"button\">-30s</button></a></p>");
+                 client.println("<hr><p><a href=\"/on\"><button class=\"button\">ON</button></a>");
+                 client.println("  <a href=\"/off\"><button class=\"button\">OFF</button></a></p>");
 
                 client.println("</body></html>");
                 
