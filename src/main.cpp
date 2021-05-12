@@ -16,6 +16,8 @@ int lastButtonState = LOW;   // the previous reading from the input pin
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50; 
 
+int calcVbat();
+
 void setup() {
   delay(2000);
   Serial.begin(115200);
@@ -24,6 +26,7 @@ void setup() {
   EEPROM.begin(16);
   // Set outputs to LOW
   pinMode(pinADC,INPUT);
+  calcVbat();
   pinMode(pinKonfigBtn,INPUT_PULLUP);
   pinMode(LED_BUILTIN,OUTPUT);
   pompka.begin(pinPompka);
@@ -73,13 +76,13 @@ bool checkBtn()
 
 int calcVbat()
 {
-  int adc=analogRead(pinADC);
-  Serial.print("adc "); Serial.println(adc);
-  Serial.print("mnoznik "); Serial.println(params.batMnoznik,6);
+  int adc=analogRead(pinADC);Serial.println();
+  Serial.print("* adc "); Serial.print(adc);
+  Serial.print(", mnoznik "); Serial.print(params.batMnoznik,6);
 
   float v=adc*params.batMnoznik;
-  Serial.print(v,6);
-  Serial.print("V "); Serial.println(v,6);
+  Serial.print(", ");Serial.print(v,6);
+  Serial.println("V ");
 
   params.vBatStr=String(v);
   return adc;
@@ -106,7 +109,10 @@ void loop(){
     params.licznik_sekund++;
     Serial.print(".");
     Serial.print(buttonState);
-   // calcVbat();
+    if(params.licznik_sekund % 15 ==0)
+    {
+      calcVbat();
+    }
   }
   if(pompka.getStan()==HIGH)//pompka pracuje czyli stan on
   {
