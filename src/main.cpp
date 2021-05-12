@@ -6,10 +6,12 @@
 #include "epromLib.h"
 #include "konfigPortal.h"
 #include "pompka.h"
+#include "mqtt.h"
 
 Cpompka pompka;
 CkonfigPortal konfigPortal;
 CParams params;
+Cmqtt mqtt;
 
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;   // the previous reading from the input pin
@@ -53,6 +55,8 @@ void setup() {
   Serial.println(WiFi.localIP());
   konfigPortal.begin();
   buttonState=HIGH; // musi byc high bo inicjalnie portal off
+
+  mqtt.begin();
 }
 
 bool checkBtn()
@@ -89,6 +93,12 @@ int calcVbat()
 }
 
 
+void publikujStan()
+{
+     char str[50];
+      params.getStatusStr(str,pompka.getStan(),konfigPortal.getKonfigMode());
+      mqtt.publish(str);
+}
 
 unsigned long ms=0;
 void loop(){
@@ -120,6 +130,7 @@ void loop(){
     {
       pompka.wylaczPompke();
       params.licznik_sekund=0;
+    publikujStan();
     }
   }else
   {
@@ -127,6 +138,7 @@ void loop(){
     {
       pompka.wlaczPompke();
       params.licznik_sekund=0;    
+       publikujStan();
     }
     if(!konfigPortal.getKonfigMode())
     { // idz spac
@@ -138,9 +150,10 @@ void loop(){
 
   switch(konfigPortal.loop(params,pompka.getStan()))
   {
-    case 1: pompka.wlaczPompke();  break;
-    case 0: pompka.wylaczPompke(); break;
+    case 1: pompka.wlaczPompke();  publikujStan();  break;
+    case 0: pompka.wylaczPompke(); publikujStan(); break;
     default: break;
   }
+  mqtt.loop();
   delay(1);
 }

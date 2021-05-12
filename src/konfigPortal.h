@@ -123,7 +123,7 @@ public:
                 
                 // Web Page Heading
                 client.println("<body><h1>Hydroponika Web Server</h1>");
-                
+                 client.println("<h2>"+String(ESP.getChipId())+"</h2>");
       //      client.println("<p>adc: " + String(calcVbat()) + "V. </p>"); 
                 client.println("<p>vBat: " + params.vBatStr + "V. </p>");
                 client.println("<p>Temp: " + params.tempStr + "C</p>");
