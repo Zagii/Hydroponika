@@ -6,8 +6,8 @@
 // piny
 const uint8_t pinPompka=D3;
 const uint8_t pinADC=A0;
-const uint8_t pinKonfigBtn=D4;
-const uint8_t pinTemp=D5;
+const uint8_t pinKonfigBtn=D5;
+const uint8_t pinTemp=D4;
 
 class CParams
 {

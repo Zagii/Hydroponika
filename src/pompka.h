@@ -7,6 +7,7 @@ class Cpompka
     uint8_t pinOut;
     uint8_t stanPompka;
     public:
+    Cpompka(){}
     void begin(uint pin)
     {
         Serial.println("Pompka Init");
