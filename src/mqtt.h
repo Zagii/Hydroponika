@@ -34,8 +34,8 @@ class Cmqtt
     char msg[MSG_BUFFER_SIZE];
     int value = 0;
     const char* mqtt_server = "broker.mqtt-dashboard.com";
-    const char* inTopic="hydroIN";
-    const char* outTopic="hydroOUT";
+    const char* inTopic="hydro";
+    const char* outTopic="hydro";
 
 public:
     Cmqtt(){};
@@ -60,11 +60,11 @@ public:
             client.publish(outTopic, "hello world");
             // ... and resubscribe
             client.subscribe(inTopic);
-            client.subscribe(outTopic);
+          
             } else {
             Serial.print("failed, rc=");
             Serial.println(client.state());
-      
+            delay(300);
             }
         }
     }
@@ -75,7 +75,7 @@ public:
             reconnect();
         }
         client.publish(outTopic, msg);
-          client.publish(inTopic, msg);
+        
     }
 
     void loop() { 
