@@ -7,11 +7,13 @@
 #include "konfigPortal.h"
 #include "pompka.h"
 #include "mqtt.h"
+#include "termometry.h"
 
 Cpompka pompka;
 CkonfigPortal konfigPortal;
 CParams params;
 Cmqtt mqtt;
+CTermometr termometr;
 
 int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;   // the previous reading from the input pin
@@ -25,7 +27,7 @@ void setup() {
   Serial.begin(115200);
   Serial.println("");
   Serial.println("Start");
-  EEPROM.begin(16);
+  EEPROM.begin(512);
   // Set outputs to LOW
   pinMode(pinADC,INPUT);
   calcVbat();
@@ -34,7 +36,7 @@ void setup() {
   pompka.begin(pinPompka);
   pompka.wlaczPompke();
 
-  odczytEEPROM(params.czasOn,params.czasOff);
+  odczytEEPROM(params);
   Serial.print("czasOn: ");Serial.println(params.czasOn);
   Serial.print("czasOff: ");Serial.println(params.czasOff);
 
@@ -57,6 +59,10 @@ void setup() {
   buttonState=HIGH; // musi byc high bo inicjalnie portal off
 
   mqtt.begin();
+  termometr.begin();
+  char t[150];
+  params.getStatusStr(t,pompka.getStan(),konfigPortal.getKonfigMode(),termometr.getTemp());
+  Serial.println(t);
 }
 
 bool checkBtn()
@@ -95,8 +101,8 @@ int calcVbat()
 
 void publikujStan()
 {
-     char str[50];
-      params.getStatusStr(str,pompka.getStan(),konfigPortal.getKonfigMode());
+     char str[150];
+      params.getStatusStr(str,pompka.getStan(),konfigPortal.getKonfigMode(),termometr.getTemp());
       mqtt.publish(str);
 }
 
@@ -130,7 +136,7 @@ void loop(){
     {
       pompka.wylaczPompke();
       params.licznik_sekund=0;
-    publikujStan();
+      publikujStan();
     }
   }else
   {

@@ -61,7 +61,7 @@ public:
         currentTime = millis();         
         if (client.available()) {             // if there's bytes to read from the client,
             char c = client.read();             // read a byte, then
-            Serial.write(c);                    // print it out the serial monitor
+         //   Serial.write(c);                    // print it out the serial monitor
             header += c;
             if (c == '\n') {                    // if the byte is a newline character
             // if the current line is blank, you got two newline characters in a row.
@@ -83,7 +83,7 @@ public:
                 if(tmpf>0.1)
                     {
                     params.czasOn=tmpf;
-                    zapiszEEPROM(params.czasOn,params.czasOff);
+                    zapiszEEPROM(params);
                     ret=1;
                     }
                 } else if (header.indexOf("GET /czasOff") >= 0) {
@@ -95,19 +95,32 @@ public:
                 if(tmpf>0.1)
                     {
                     params.czasOff=tmpf;
-                    zapiszEEPROM(params.czasOn, params.czasOff);
+                    zapiszEEPROM(params);
                     ret=1;
                     }
                 }else if (header.indexOf("GET /mnoznik") >= 0) {
-                Serial.print("mnoznik ");
-                String s=header.substring(header.indexOf("GET /mnoznik"));
-                s=s.substring(s.indexOf("mnoznik")+8,s.indexOf("HTTP/")-1);
-                Serial.println(s);
-                params.batMnoznik=s.toFloat();
+                    Serial.print("mnoznik ");
+                    String s=header.substring(header.indexOf("GET /mnoznik"));
+                    s=s.substring(s.indexOf("mnoznik")+8,s.indexOf("HTTP/")-1);
+                    Serial.println(s);
+                    params.batMnoznik=s.toFloat();
+                    zapiszEEPROM(params);
                 }else if (header.indexOf("GET /on") >= 0) {
                     ret=1;
                 }else if (header.indexOf("GET /off") >= 0) {
                     ret=0;
+                }else if (header.indexOf("GET /setName") >= 0) {
+                    Serial.print("setName ");
+                    String s=header.substring(header.indexOf("GET /setName"));
+                    s=s.substring(s.indexOf("setName")+8,s.indexOf("HTTP/")-1);
+                    Serial.println(s);
+
+                    if(s.length()>0)
+                    {
+                        params.nazwa=s;
+                        zapiszEEPROM(params);
+                        ret=1;
+                    }
                 }
                 
                 // Display the HTML web page
@@ -123,7 +136,7 @@ public:
                 
                 // Web Page Heading
                 client.println("<body><h1>Hydroponika Web Server</h1>");
-                 client.println("<h2>"+String(ESP.getChipId())+"</h2>");
+                 client.println("<h2>"+params.nazwa+"</h2>");
       //      client.println("<p>adc: " + String(calcVbat()) + "V. </p>"); 
                 client.println("<p>vBat: " + params.vBatStr + "V. </p>");
                 client.println("<p>Temp: " + params.tempStr + "C</p>");
